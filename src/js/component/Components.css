@@ -1,0 +1,31 @@
+.father{
+    margin: auto;
+    width: 500px;
+}
+.input{
+    width: 430px;
+    
+}
+.submitButton{
+    color: grey;
+    border: rgb(107, 65, 65);
+    background: rgba(238, 201, 201, 0.486);
+}
+.inputButton{
+    display: flex;
+}
+body{
+    background-image: url('https://img.freepik.com/foto-gratis/lisa-pared-estuco-blanco_1194-6983.jpg');
+    background-size: 70%;
+  }
+  .deleteButton{
+    color: rgba(238, 49, 15, 0.486);
+  }
+  .tittle{
+    color: rgba(238, 49, 15, 0.486);
+    font-style: italic;
+    font-size: 8rex;
+    margin: auto;
+    margin-left: 15px;
+    margin-bottom: 10px;
+  }
