@@ -1,12 +1,13 @@
-/* import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styles from './Components.css';
 
 const Home = () => {
   const [username, setUsername] = useState('');
-  const [list, setList] = useState([]); // Inicializar list como un arreglo vacío
+  const [list, setList] = useState([]); // Esta lista es de usuarios
+  const [taskList, setTaskList] = useState([]);
   const [input, setInput] = useState('');
   const [hidden, setHidden] = useState(true);
-  const [counter, setCounter]= useState(0);
+  const [counter, setCounter] = useState(0);
 
   // Postear el usuario
   const createUsername = async () => {
@@ -33,11 +34,51 @@ const Home = () => {
   };
 
 
-  const valueUsername = (e) => {
-    setInput(e.target.value);
-    console.log(input);
+  const valueInput = async (e) => {
+
+    try {
+      setInput(e.target.value);
+      console.log(input);
+
+      let response = await fetch(`https://playground.4geeks.com/todo/users/${e.target.value}`);
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      };
+      let data = await response.json()
+      setTaskList(data.todos)
+    }
+    catch (e) {
+      console.error(e)
+    }
+    // si data.task= ('') === algún estado haga que se muestre el cartel que no hay tareas para el usuario data.todos
   };
   // get de la info list
+
+
+  useEffect(async () => {
+    try {
+      await handlerGetUserList()
+    } catch (e) { }
+  }, [])
+
+  const handlerGetUserList = async () => {
+    try {
+      let response = await fetch(
+        `https://playground.4geeks.com/todo/users`
+      );
+      if (!response.ok) {
+        throw new Error("Error fetching data");
+      }
+
+      let listUsers = await response.json();
+      console.log("listUsers actualizado:", listUsers); // Registro de depuración
+      setList(listUsers.users); // Actualizar list con los datos devueltos por showList()
+    } catch (e) {
+      console.error("Error: ", e);
+    }
+  };
+
+
   const showList = async () => {
     try {
       let response = await fetch(
@@ -56,7 +97,7 @@ const Home = () => {
   };
 
   // borra el usuario al ser llamada
-  const deleteUser = async (usernameToDelete) => {
+  const deleteUser = async (usernameToDelete, index) => {
     try {
       let response = await fetch(
         `https://playground.4geeks.com/todo/users/${usernameToDelete}`,
@@ -68,7 +109,7 @@ const Home = () => {
         throw new Error("the user couldn't be deleted" + response.statusText)
       }
       // actions.deleteUser()
-      actions.showList();
+      removeItem(index);
       showList();
 
     } catch (error) {
@@ -76,35 +117,69 @@ const Home = () => {
     }
   };
 
+  const deleteTask = async (id) => {
+    try {
+      let response = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Error", statusText);
+      }
+
+      let data = await response.json()
+      alert("el task ha sido borrado correctamente");
+
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const removeItem = (index) => {
-		let newList = [...list];
-		newList.splice(index, 1);
-		setList(newList);
-		setCounter(counter - 1);
-	}
+    let newList = [...list];
+    newList.splice(index, 1);
+    setList(newList);
+    setCounter(counter - 1);
+  }
 
 
   return (
     <div className='father border'>
+      <h1 className='tittle'>Current users</h1>
+      <div>
+        {
+          list && list.map((item, index) => {
+            return (
+              <div>
+                <div className="d-flex justify-content-between bg-secondary">
+                  {item.name}
+                  <button className='deleteButton bg-white border-0' onClick={() => deleteUser(item.name, index)}>{hidden ? null : "X"}</button>
+                </div>
+                
+              </div>
+            )
+          })
+
+        }
+      </div>
+      <div id="counter" className="bg-white text-secondary">{counter != '' ? counter + (' user added') : ''}</div>
       <h1 className='tittle'>Add your new user</h1>
-      <div class="input-group mb-3">
-        <input type="text" class="form-control border-bottom rounded-0 border border-light" placeholder="Add user" aria-label="Add user"  value={input} onChange={valueUsername} />
-        <button class="submitButton" id="basic-addon2" onClick={createUsername}>Submit</button>
+      <div className="input-group mb-3">
+        <input type="text" className="form-control border-bottom rounded-0 border border-light" placeholder="Search user" aria-label="Add user" value={input} onChange={valueInput} />
+        <button className="submitButton" id="basic-addon2" onClick={createUsername}>Or create</button>
       </div>
       <div>
-        {console.log(list)}
-        {list.map((item, index) => (
-          <div key={index} onMouseEnter={() => { setHidden(false) }} onMouseLeave={() => { setHidden(true) }}className='border border-light bg-white'>
+        {taskList && taskList.map((item, index) => (
+          <div key={index} onMouseEnter={() => { setHidden(false) }} onMouseLeave={() => { setHidden(true) }} className='border border-light bg-white'>
             <div className='d-flex justify-content-between m-2'>
-              {item.name}
+              {item.label}
               <div>
-                <button className='deleteButton bg-white border-0' onClick={() => deleteUser(item.name)}>X</button>
+                <button className='deleteButton bg-white border-0' onClick={() => deleteTask(item.name, index)}>{hidden ? null : "X"}</button>
               </div>
             </div>
           </div>
         ))}
       </div>
-      <div id="counter" className="bg-white text-secondary">{counter != ''? counter + (' user added'): ''}</div>
+
     </div>
   );
 };
@@ -143,111 +218,4 @@ export default Home;
 //     console.error("Error: ", e);
 //   }
 
-// }; */
-
-import React, { useState } from 'react';
-import styles from './Components.css';
-
-const Home = () => {
-  const [username, setUsername] = useState('');
-  const [list, setList] = useState([]);
-  const [input, setInput] = useState('');
-  const [hidden, setHidden] = useState(true);
-  const [counter, setCounter] = useState(0);
-
-  const createUsername = async () => {
-    try {
-      let response = await fetch(
-        `https://playground.4geeks.com/todo/users/${input}`,
-        {
-          method: "POST",
-          body: JSON.stringify([]),
-          headers: { "Content-Type": "application/json" }
-        }
-      );
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
-      setUsername(input);
-      setInput('');
-      showList();
-      setCounter(counter + 1);
-    } catch (error) {
-      console.error(error.message);
-    }
-  };
-
-  const valueUsername = (e) => {
-    setInput(e.target.value);
-    console.log(input);
-  };
-
-  const showList = async () => {
-    try {
-      let response = await fetch(
-        `https://playground.4geeks.com/todo/users/${username}`
-      );
-      if (!response.ok) {
-        throw new Error("Error fetching data");
-      }
-
-      let listTodos = await response.json();
-      console.log("List actualizado:", listTodos);
-      setList(listTodos.users);
-    } catch (e) {
-      console.error("Error: ", e);
-    }
-  };
-
-  const deleteUser = async (usernameToDelete, index) => {
-    try {
-      let response = await fetch(
-        `https://playground.4geeks.com/todo/users/${usernameToDelete}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (!response.ok) {
-        throw new Error("the user couldn't be deleted" + response.statusText)
-      }
-      removeItem(index);
-      showList();
-    } catch (error) {
-      console.error("Error", error.message);
-    }
-  };
-
-  const removeItem = (index) => {
-    let newList = [...list];
-    newList.splice(index, 1);
-    setList(newList);
-    setCounter(counter - 1);
-  }
-
-  return (
-    <div className='father border'>
-      <h1 className='tittle'>Add your new user</h1>
-      <div class="input-group mb-3">
-        <input type="text" class="form-control border-bottom rounded-0 border border-light" placeholder="Add user" aria-label="Add user" value={input} onChange={valueUsername} />
-        <button class="submitButton" id="basic-addon2" onClick={createUsername}>Submit</button>
-      </div>
-      <div>
-        {list.map((item, index) => (
-          <div key={index} onMouseEnter={() => { setHidden(false) }} onMouseLeave={() => { setHidden(true) }} className='border border-light bg-white'>
-            <div className='d-flex justify-content-between m-2'>
-              {item.name}
-              <div>
-                {/* Combinando deleteUser y removeItem */}
-                <button className='deleteButton bg-white border-0' onClick={() => deleteUser(item.name, index)}>{hidden ? null : "X"}</button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div id="counter" className="bg-white text-secondary">{counter != ''? counter + (' users added'): ''}</div>
-    </div>
-  );
-};
-
-export default Home;
+// };
