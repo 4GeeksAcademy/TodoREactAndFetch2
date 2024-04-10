@@ -30,7 +30,7 @@ const Home = () => {
         throw new Error(response.statusText);
       }
 
-      await showList();
+      await showUserList();
       setUsername(input);
       setInput(''); // Limpia el input después de crear el usuario
       setCounter(prevCounter => prevCounter + 1);
@@ -41,19 +41,23 @@ const Home = () => {
 
   const createNewTask = async () =>{
     try{
-      let response = await fetch(`https://playground.4geeks.com/todo/todos/${task}`,{
+      let response = await fetch(`https://playground.4geeks.com/todo/todos/${input}`,{
         method: "POST",
-        body: JSON.stringify([]),
+        body: JSON.stringify({
+          label: task,
+          done: false
+        }),
         headers: {"Content-Type": "application/json"}
       });
       if(!response.ok){
         throw new Error(response.statusText);
       }
       
-      setUserTasks(task);
+      // setTaskList([...taskList, task]);
+      reloadTodoList()
       setTask('');
       setCounter(prevCounter => prevCounter + 1);
-      await showUserTaskList();
+      // await showUserTaskList();
     }
     catch(e){
       console.error(e)
@@ -78,11 +82,10 @@ const Home = () => {
   };
 
   // get de la info list
-  const valueTask = async(e)=>{
+  const reloadTodoList = async()=>{
     try{
-      setTask(e.target.value);
-
-      let response = await fetch(`https://playground.4geeks.com/todo/users/${e.target.value}`);
+      console.log("ENTRÉ EN RELOADTODOLIST")
+      let response = await fetch(`https://playground.4geeks.com/todo/users/${input}`);
       if(!response.ok){
         throw new Error(response.status);
       }
@@ -93,9 +96,19 @@ const Home = () => {
     }
   }
 
+  const handlerUserClick = async(name)=>{
+    try{
+      setInput(name)
+      console.log("EL VALOR DEL INPUT AHORA ES:",input)
+      setTimeout(async()=>{await reloadTodoList()},500)
+    }catch(e){
+      console.error(e)
+    }
+  }
+
   useEffect(() => {
     handlerGetUserList();
-  }, [])
+  }, [counter])
 
   const handlerGetUserList = async () => {
     try {
@@ -115,7 +128,7 @@ const Home = () => {
   };
 
  // mostrar listas
-  const showList = async () => {
+  const showUserList = async () => {
     try {
       let response = await fetch(
         `https://playground.4geeks.com/todo/users/${username}`
@@ -132,22 +145,22 @@ const Home = () => {
     }
   };
 
-  const showUserTaskList = async () => {
-    try {
-      let response = await fetch(
-        `https://playground.4geeks.com/todo/users/${userTasks}`
-      );
-      if (!response.ok) {
-        throw new Error("Error fetching data");
-      }
+  // const showUserTaskList = async () => {
+  //   try {
+  //     let response = await fetch(
+  //       `https://playground.4geeks.com/todo/users/${userTasks}`
+  //     );
+  //     if (!response.ok) {
+  //       throw new Error("Error fetching data");
+  //     }
 
-      let listTodos = await response.json();
-      console.log("List actualizado:", listTodos); // Registro de depuración
-      setList(listTodos.todos); // Actualizar list con los datos devueltos por showList()
-    } catch (e) {
-      console.error("Error: ", e);
-    }
-  };
+  //     let listTodos = await response.json();
+  //     console.log("List actualizado:", listTodos); // Registro de depuración
+  //     setList(listTodos.todos); // Actualizar list con los datos devueltos por showList()
+  //   } catch (e) {
+  //     console.error("Error: ", e);
+  //   }
+  // };
 
 
   // borra el usuario al ser llamada
@@ -163,14 +176,14 @@ const Home = () => {
         throw new Error("the user couldn't be deleted" + response.statusText)
       }
       removeItem(index);
-      await showList();
+      await showUserList();
 
     } catch (error) {
       console.error("Error", error.message);
     }
   };
 
-  const deleteTask = async (id, index) => {
+  const deleteTask = async (id) => {
     try {
       let response = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
         method: "DELETE",
@@ -178,9 +191,8 @@ const Home = () => {
       if (!response.ok) {
         throw new Error("Error", response.statusText);
       }
-      removeTask(index);
-      await showTaskList();
-      let data = await response.json()
+      await reloadTodoList();
+      
       alert("el task ha sido borrado correctamente");
 
     } catch (e) {
@@ -195,12 +207,7 @@ const Home = () => {
     setCounter(prevCounter => prevCounter - 1);
   }
 
-  const removeTask= (index)=>{
-    let newTaskList =[...userTaskList];
-    newTaskList.splice(index,1);
-    setUserTaskList(newTaskList);
-    setCounter(prevCounter => prevCounter - 1);
-  }
+  
   return (
     <div className='father border'>
       <h1 className='tittle'>Current users</h1>
@@ -210,7 +217,7 @@ const Home = () => {
             return (
               <div key={index}>
                 <div className="d-flex justify-content-between bg-white border border-light">
-                  {item.name}
+                  <div onClick={()=>handlerUserClick(item.name)}>{item.name}</div>
                   <button className='deleteButton bg-white border-0' onClick={() => deleteUser(item.name, index)}>{hidden ? null : "X"}</button>
                 </div>               
               </div>
@@ -230,11 +237,11 @@ const Home = () => {
       </div>
       <div>
         {taskList && taskList.map((item, index) => (
-          <div key={index} onMouseEnter={() => { setHidden(false) }} onMouseLeave={() => { setHidden(true) }} className='border border-light bg-white'>
+          <div key={index} className='border border-light bg-white'>
             <div className='d-flex justify-content-between m-2'>
               {item.label}
               <div>
-                <button className='deleteButton bg-white border-0' onClick={() => deleteTask(item.todos, index)}>{hidden ? null : "X"}</button>
+                <button className='deleteButton bg-white border-0' onClick={() => deleteTask(item.id)}>X</button>
               </div>
             </div>
           </div>
