@@ -145,23 +145,6 @@ const Home = () => {
     }
   };
 
-  // const showUserTaskList = async () => {
-  //   try {
-  //     let response = await fetch(
-  //       `https://playground.4geeks.com/todo/users/${userTasks}`
-  //     );
-  //     if (!response.ok) {
-  //       throw new Error("Error fetching data");
-  //     }
-
-  //     let listTodos = await response.json();
-  //     console.log("List actualizado:", listTodos); // Registro de depuración
-  //     setList(listTodos.todos); // Actualizar list con los datos devueltos por showList()
-  //   } catch (e) {
-  //     console.error("Error: ", e);
-  //   }
-  // };
-
 
   // borra el usuario al ser llamada
   const deleteUser = async (usernameToDelete, index) => {
@@ -218,7 +201,7 @@ const Home = () => {
               <div key={index}>
                 <div className="d-flex justify-content-between bg-white border border-light">
                   <div onClick={()=>handlerUserClick(item.name)}>{item.name}</div>
-                  <button className='deleteButton bg-white border-0' onClick={() => deleteUser(item.name, index)}>{hidden ? null : "X"}</button>
+                  <button className='deleteButton bg-white border-0' onClick={() => deleteUser(item.name, index)}>X</button>
                 </div>               
               </div>
             )
@@ -229,7 +212,7 @@ const Home = () => {
       <div id="counter" className="bg-white text-secondary">{counter !== 0 ? counter + ' user added' : ''}</div>
       <h1 className='tittle'>Add your new user</h1>
       <div className="input-group mb-3">
-        <input type="text" className="form-control border-bottom rounded-0 border border-light" placeholder="Search user" aria-label="Add user" value={input} onChange={valueInput} />
+        <input type="text" className="form-control border-bottom rounded-0 border border-light" placeholder="Select your user above or create a new one" aria-label="Select your user above or create a new one" value={input} onChange={valueInput} />
         <button className="submitButton" id="basic-addon2" onClick={createUsername}>Or create</button>
         
         <input type="text" className="form-control border-bottom rounded-0 border border-light" placeholder='Add a new task' area label="Add a new task" value={task} onChange={(e)=> setTask(e.target.value)}></input>
